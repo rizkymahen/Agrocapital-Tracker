@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroCapital - Tracker Keuangan & Modal Hidroponik</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for Achievements -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- HEADER / NAVIGATION -->
+        <header class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-700/60 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid font-bold fa-seedling text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-brand-700 via-emerald-600 to-gold-500 bg-clip-text text-transparent">
+                        AgroCapital Tracker
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Target Modal Hidroponik Umur 30 &bull; Harley Street Glide</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <!-- Toggle Theme Button -->
+                <button id="btn-theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">
+                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+                
+                <!-- Quick Reset / Info -->
+                <button onclick="openSettingsModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Atur Income</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- TOP SUMMARY GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- 1. Pemasukan & Skema 50:50 -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/60 relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-6 -bottom-6 text-brand-500/10 dark:text-brand-400/5 text-9xl pointer-events-none">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Pemasukan Mingguan</span>
+                        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300">
+                            Skema 50 : 50
+                        </span>
+                    </div>
+                    <div id="display-weekly-income" class="text-3xl font-extrabold text-slate-900 dark:text-white">
+                        Rp 650.000
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                    <div class="bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/40">
+                        <span class="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 block">50% Tabungan</span>
+                        <span id="display-alloc-savings" class="text-sm font-bold text-emerald-800 dark:text-emerald-300">Rp 325.000</span>
+                    </div>
+                    <div class="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-100 dark:border-amber-800/40">
+                        <span class="text-[11px] font-medium text-amber-600 dark:text-amber-400 block">50% Operasional</span>
+                        <span id="display-alloc-op" class="text-sm font-bold text-amber-800 dark:text-amber-300">Rp 325.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Target Modal Hidroponik Progress -->
+            <div class="bg-gradient-to-br from-brand-900 via-brand-800 to-slate-900 text-white rounded-2xl p-5 shadow-lg shadow-brand-900/20 relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-4 -bottom-4 text-emerald-400/10 text-9xl pointer-events-none">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">Total Modal Hidroponik</span>
+                        <span class="text-xs text-amber-400 font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-flag-checkered"></i> Target Rp 20M
+                        </span>
+                    </div>
+                    <div id="display-accumulated-savings" class="text-3xl font-extrabold text-white">
+                        Rp 0
+                    </div>
+                </div>
+
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between text-xs font-medium text-slate-300">
+                        <span>Progress</span>
+                        <span id="display-savings-percentage" class="text-amber-300 font-bold">0%</span>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="w-full h-3 bg-slate-800/80 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
+                        <div id="savings-progress-bar" class="h-full bg-gradient-to-r from-emerald-400 to-amber-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-[11px] text-slate-400 pt-1">
+                        <span>Estimasi Selesai:</span>
+                        <span id="display-countdown" class="font-semibold text-emerald-300">~62 Minggu lagi</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Sisa Budget Operasional Minggu Ini -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/60 relative overflow-hidden flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Sisa Operasional Minggu Ini</span>
+                        <button onclick="resetWeeklyExpense()" class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reset Minggu
+                        </button>
+                    </div>
+                    <div id="display-remaining-op" class="text-3xl font-extrabold text-slate-900 dark:text-white">
+                        Rp 325.000
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Dari Budget Rp <span id="display-max-op">325.000</span>
+                    </p>
+                </div>
+
+                <div class="mt-4">
+                    <button onclick="openDepositModal()" class="w-full py-2.5 px-4 bg-gradient-to-r from-brand-600 to-emerald-500 hover:from-brand-700 hover:to-emerald-600 text-white rounded-xl font-bold text-sm shadow-md shadow-brand-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-piggy-bank text-amber-300"></i>
+                        <span>Setor Tabungan Minggu Ini</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN SECTION: TRACKER BUDGET & INPUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- LEFT 2 COLUMNS: POS BUDGET & CATATAN EXPENSE -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- POS BIAYA HIDUP MINGGUAN STATUS -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/60 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-brand-500"></i>
+                            Pos Biaya Hidup Minggu Ini
+                        </h2>
+                        <span class="text-xs text-slate-400">Default Allocation</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        
+                        <!-- Pos Bensin -->
+                        <div class="p-4 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-gas-pump text-amber-500"></i> Bensin Motor
+                                </span>
+                                <span id="budget-bensin" class="text-xs font-semibold text-slate-400">Rp 100.000</span>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-xs text-slate-500">Terpakai:</span>
+                                <span id="used-bensin" class="text-sm font-bold text-slate-800 dark:text-slate-200">Rp 0</span>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                                <div id="bar-bensin" class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Pos Makan -->
+                        <div class="p-4 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-utensils text-emerald-500"></i> Makan Kuliah
+                                </span>
+                                <span id="budget-makan" class="text-xs font-semibold text-slate-400">Rp 150.000</span>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-xs text-slate-500">Terpakai:</span>
+                                <span id="used-makan" class="text-sm font-bold text-slate-800 dark:text-slate-200">Rp 0</span>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                                <div id="bar-makan" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Pos Nongkrong -->
+                        <div class="p-4 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-mug-hot text-purple-500"></i> Nongkrong
+                                </span>
+                                <span id="budget-nongkrong" class="text-xs font-semibold text-slate-400">Rp 75.000</span>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-xs text-slate-500">Terpakai:</span>
+                                <span id="used-nongkrong" class="text-sm font-bold text-slate-800 dark:text-slate-200">Rp 0</span>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                                <div id="bar-nongkrong" class="bg-purple-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- RIWAYAT PENGELUARAN & LOG TABUNGAN -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/60 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-brand-500"></i>
+                            Riwayat Transaksi Minggu Ini
+                        </h2>
+                        <button onclick="clearHistory()" class="text-xs text-rose-500 hover:text-rose-600 font-medium">
+                            Hapus Semua Log
+                        </button>
+                    </div>
+
+                    <!-- List Transactions -->
+                    <div id="expense-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT 1 COLUMN: INPUT FORM & HYDROPONIC MILESTONE INFO -->
+            <div class="space-y-6">
+
+                <!-- INPUT PENGELUARAN HARIAN -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/60 space-y-4">
+                    <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-brand-500"></i>
+                        Catat Pengeluaran
+                    </h2>
+
+                    <form id="expense-form" onsubmit="addExpense(event)" class="space-y-3">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                                Kategori
+                            </label>
+                            <select id="expense-category" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="Bensin">Bensin Motor</option>
+                                <option value="Makan">Makan Kuliah</option>
+                                <option value="Nongkrong">Nongkrong & Weekend</option>
+                                <option value="Lainnya">Lainnya / Ekstra</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                                Jumlah (Rp)
+                            </label>
+                            <input type="number" id="expense-amount" placeholder="contoh: 15000" required min="1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                                Catatan / Keterangan
+                            </label>
+                            <input type="text" id="expense-note" placeholder="contoh: Nasi Warteg + Es Teh" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-brand-600 dark:hover:bg-brand-500 text-white rounded-xl font-bold text-sm shadow-md transition-all">
+                            Simpan Pengeluaran
+                        </button>
+                    </form>
+                </div>
+
+                <!-- HYDROPONIC ROADMAP INFO -->
+                <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-sm space-y-3 relative overflow-hidden">
+                    <div class="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                        <i class="fa-solid fa-motorcycle text-lg"></i>
+                        <span>Goal Roadmap: Umur 30</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Harley Street Glide target kamu diraih dengan membesarkan bisnis hidroponik dari modal awal **Rp20 Juta** ini.
+                    </p>
+                    <ul class="text-xs text-slate-300 space-y-1.5 pt-1 border-t border-slate-800">
+                        <li class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i>
+                            <span>Skala Lahan: **150 m²** (3.600 Lubang NFT)</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i>
+                            <span>Estimasi Panen: **360 kg / Bulan**</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i>
+                            <span>Potensi Laba: **± Rp 7,3 Juta / Bulan**</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL 1: SETOR TABUNGAN MINGGU INI -->
+    <div id="modal-deposit" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-piggy-bank text-emerald-500"></i>
+                    Setor Tabungan Modal
+                </h3>
+                <button onclick="closeDepositModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                Pilih atau masukkan jumlah yang ingin kamu alokasikan ke Tabungan Bisnis Hidroponik.
+            </p>
+
+            <div class="space-y-3">
+                <button onclick="quickDeposit(325000)" class="w-full py-3 px-4 rounded-xl border border-brand-500/30 bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 font-bold text-sm flex justify-between items-center hover:bg-brand-100 transition-colors">
+                    <span>Setoran Rutin Mingguan (50%)</span>
+                    <span>Rp 325.000</span>
+                </button>
+
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+                    <span class="flex-shrink mx-2 text-[11px] text-slate-400 font-semibold uppercase">Atau Custom</span>
+                    <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">Jumlah Nominal (Rp)</label>
+                    <input type="number" id="custom-deposit-amount" placeholder="contoh: 500000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeDepositModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    Batal
+                </button>
+                <button onclick="submitCustomDeposit()" class="w-1/2 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold shadow-md transition-colors">
+                    Setor Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SETTINGS / ATUR INCOME & MODAL TARGET -->
+    <div id="modal-settings" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-brand-500"></i>
+                    Pengaturan Keuangan
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">Uang Saku Mingguan (Rp)</label>
+                    <input type="number" id="input-weekly-income" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">Target Total Modal (Rp)</label>
+                    <input type="number" id="input-target-capital" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="pt-2">
+                    <button onclick="saveSettings()" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold shadow-md transition-colors">
+                        Simpan Pengaturan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // Default App State
+        const DEFAULT_STATE = {
+            weeklyIncome: 650000,
+            savingsRatio: 0.50, // 50%
+            opRatio: 0.50,      // 50%
+            targetCapital: 20000000,
+            accumulatedSavings: 0,
+            weeklyExpenses: [],
+            budgetAllocations: {
+                Bensin: 100000,
+                Makan: 150000,
+                Nongkrong: 75000,
+                Lainnya: 0
+            }
+        };
+
+        let appState = { ...DEFAULT_STATE };
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            initTheme();
+            render();
+        });
+
+        // Local Storage Logic
+        function loadState() {
+            const saved = localStorage.getItem('agro_capital_data');
+            if (saved) {
+                try {
+                    appState = { ...DEFAULT_STATE, ...JSON.parse(saved) };
+                } catch (e) {
+                    console.error("Failed loading saved state", e);
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('agro_capital_data', JSON.stringify(appState));
+            render();
+        }
+
+        // Format Currency
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                maximumFractionDigits: 0
+            }).format(number);
+        }
+
+        // Render UI
+        function render() {
+            const weeklySavingsAlloc = appState.weeklyIncome * appState.savingsRatio;
+            const weeklyOpAlloc = appState.weeklyIncome * appState.opRatio;
+
+            // Render Header & Totals
+            document.getElementById('display-weekly-income').innerText = formatRupiah(appState.weeklyIncome);
+            document.getElementById('display-alloc-savings').innerText = formatRupiah(weeklySavingsAlloc);
+            document.getElementById('display-alloc-op').innerText = formatRupiah(weeklyOpAlloc);
+
+            // Render Savings Capital
+            document.getElementById('display-accumulated-savings').innerText = formatRupiah(appState.accumulatedSavings);
+            
+            const progressPercent = Math.min(100, Math.round((appState.accumulatedSavings / appState.targetCapital) * 100));
+            document.getElementById('display-savings-percentage').innerText = `${progressPercent}%`;
+            document.getElementById('savings-progress-bar').style.width = `${progressPercent}%`;
+
+            // Calculate Countdown Weeks
+            const remainingNeeded = Math.max(0, appState.targetCapital - appState.accumulatedSavings);
+            const remainingWeeks = weeklySavingsAlloc > 0 ? Math.ceil(remainingNeeded / weeklySavingsAlloc) : 0;
+            document.getElementById('display-countdown').innerText = `~${remainingWeeks} Minggu lagi (${(remainingWeeks / 4.33).toFixed(1)} bulan)`;
+
+            // Render Operational Expenses
+            const totalUsedOp = appState.weeklyExpenses.reduce((sum, item) => sum + item.amount, 0);
+            const remainingOp = weeklyOpAlloc - totalUsedOp;
+            document.getElementById('display-remaining-op').innerText = formatRupiah(remainingOp);
+            document.getElementById('display-max-op').innerText = (weeklyOpAlloc / 1000).toFixed(0) + '.000';
+
+            // Category Totals
+            const categoryUsed = { Bensin: 0, Makan: 0, Nongkrong: 0, Lainnya: 0 };
+            appState.weeklyExpenses.forEach(item => {
+                if (categoryUsed[item.category] !== undefined) {
+                    categoryUsed[item.category] += item.amount;
+                } else {
+                    categoryUsed.Lainnya += item.amount;
+                }
+            });
+
+            // Update Category Bars
+            updateCategoryBar('bensin', categoryUsed.Bensin, appState.budgetAllocations.Bensin);
+            updateCategoryBar('makan', categoryUsed.Makan, appState.budgetAllocations.Makan);
+            updateCategoryBar('nongkrong', categoryUsed.Nongkrong, appState.budgetAllocations.Nongkrong);
+
+            // Render Log History
+            renderExpenseHistory();
+        }
+
+        function updateCategoryBar(catKey, used, budget) {
+            document.getElementById(`used-${catKey}`).innerText = formatRupiah(used);
+            const percent = budget > 0 ? Math.min(100, Math.round((used / budget) * 100)) : 0;
+            document.getElementById(`bar-${catKey}`).style.width = `${percent}%`;
+            
+            // Change bar color if over budget
+            const barEl = document.getElementById(`bar-${catKey}`);
+            if (used > budget) {
+                barEl.classList.remove('bg-amber-500', 'bg-emerald-500', 'bg-purple-500');
+                barEl.classList.add('bg-rose-500');
+            }
+        }
+
+        function renderExpenseHistory() {
+            const listEl = document.getElementById('expense-list');
+            listEl.innerHTML = '';
+
+            if (appState.weeklyExpenses.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 text-xs">
+                        Belum ada catatan pengeluaran minggu ini.
+                    </div>
+                `;
+                return;
+            }
+
+            appState.weeklyExpenses.slice().reverse().forEach((item, index) => {
+                const realIndex = appState.weeklyExpenses.length - 1 - index;
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-xs';
+                
+                let iconClass = 'fa-tag text-slate-400';
+                if (item.category === 'Bensin') iconClass = 'fa-gas-pump text-amber-500';
+                if (item.category === 'Makan') iconClass = 'fa-utensils text-emerald-500';
+                if (item.category === 'Nongkrong') iconClass = 'fa-mug-hot text-purple-500';
+
+                div.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-slate-200/60 dark:bg-slate-800 flex items-center justify-center">
+                            <i class="fa-solid ${iconClass}"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-slate-800 dark:text-slate-200 block">${item.category}</span>
+                            <span class="text-[10px] text-slate-400">${item.note || 'Tanpa catatan'} &bull; ${item.date}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-rose-500">- ${formatRupiah(item.amount)}</span>
+                        <button onclick="deleteExpense(${realIndex})" class="text-slate-400 hover:text-rose-500 transition-colors">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+        // Add Expense Action
+        function addExpense(e) {
+            e.preventDefault();
+            const category = document.getElementById('expense-category').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const note = document.getElementById('expense-note').value;
+
+            if (!amount || amount <= 0) return;
+
+            const newExpense = {
+                category,
+                amount,
+                note,
+                date: new Date().toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })
+            };
+
+            appState.weeklyExpenses.push(newExpense);
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-note').value = '';
+
+            saveState();
+            showToast("Pengeluaran berhasil dicatat!");
+        }
+
+        function deleteExpense(index) {
+            appState.weeklyExpenses.splice(index, 1);
+            saveState();
+            showToast("Pengeluaran dihapus.");
+        }
+
+        function resetWeeklyExpense() {
+            if (confirm("Reset seluruh pengeluaran operasional minggu ini?")) {
+                appState.weeklyExpenses = [];
+                saveState();
+                showToast("Pengeluaran minggu ini telah di-reset.");
+            }
+        }
+
+        function clearHistory() {
+            if (confirm("Hapus semua data riwayat?")) {
+                appState.weeklyExpenses = [];
+                saveState();
+            }
+        }
+
+        // Deposit Logic
+        function quickDeposit(amount) {
+            appState.accumulatedSavings += amount;
+            saveState();
+            closeDepositModal();
+            triggerConfetti();
+            showToast(`Berhasil setor ${formatRupiah(amount)} ke modal!`);
+        }
+
+        function submitCustomDeposit() {
+            const input = document.getElementById('custom-deposit-amount');
+            const amount = parseFloat(input.value);
+            if (amount && amount > 0) {
+                quickDeposit(amount);
+                input.value = '';
+            }
+        }
+
+        function openDepositModal() {
+            document.getElementById('modal-deposit').classList.remove('hidden');
+        }
+
+        function closeDepositModal() {
+            document.getElementById('modal-deposit').classList.add('hidden');
+        }
+
+        // Settings Logic
+        function openSettingsModal() {
+            document.getElementById('input-weekly-income').value = appState.weeklyIncome;
+            document.getElementById('input-target-capital').value = appState.targetCapital;
+            document.getElementById('modal-settings').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('modal-settings').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            const income = parseFloat(document.getElementById('input-weekly-income').value);
+            const target = parseFloat(document.getElementById('input-target-capital').value);
+
+            if (income > 0) appState.weeklyIncome = income;
+            if (target > 0) appState.targetCapital = target;
+
+            saveState();
+            closeSettingsModal();
+            showToast("Pengaturan disimpan!");
+        }
+
+        // Theme Toggle Logic
+        function initTheme() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').className = 'fa-solid fa-sun text-lg text-amber-400';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon').className = 'fa-solid fa-moon text-lg text-slate-600';
+            }
+
+            document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                    document.getElementById('theme-icon').className = 'fa-solid fa-moon text-lg text-slate-600';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                    document.getElementById('theme-icon').className = 'fa-solid fa-sun text-lg text-amber-400';
+                }
+            });
+        }
+
+        // Confetti Effect
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+            }
+        }
+
+        // Toast Message Notification
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 border border-slate-700 pointer-events-auto transform transition-all duration-300 opacity-0 translate-y-2';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> ${message}`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
